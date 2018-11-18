@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div>
+<input type="text" id="myText"/>
+<button onclick="change()">Store</button>
+</div>
+<div id="result">
+</div>
+
+<div>
+<p>Count numbers: <output id="result"></output></p>
+<button onclick="startWorker()">Start Worker</button> 
+<button onclick="stopWorker()">Stop Worker</button>
+</div>
+<script>
+// Check browser support
+change = function(){
+if (typeof(Storage) !== "undefined") {
+    // Store
+    localStorage.setItem("lastname", document.getElementById("myText").value);
+    // Retrieve
+    document.getElementById("result").innerHTML = localStorage.getItem("lastname");
+} else {
+    document.getElementById("result").innerHTML = "Sorry, your browser does not support Web Storage...";
+}
+}
+
+var w;
+
+function startWorker() {
+    if(typeof(Worker) !== "undefined") {
+        if(typeof(w) == "undefined") {
+            w = new Worker("demo_workers.js");
+        }
+        w.onmessage = function(event) {
+		var num = event.data;
+		const isPrime = num => {
+		  for(let i = 2; i < num; i++)
+			if(num % i === 0) return false;
+		  return num !== 1 && num !== 0;
+		}
+		if(!isPrime){
+            document.getElementById("result").innerHTML = event.data;
+			}else{
+				stopWorker();
+				return;
+			}
+			
+        };
+    } else {
+        document.getElementById("result").innerHTML = "Sorry, your browser does not support Web Workers...";
+    }
+}
+
+function stopWorker() { 
+    w.terminate();
+    w = undefined;
+}
+</script>
+
+</body>
+</html>
